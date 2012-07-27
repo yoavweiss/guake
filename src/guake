@@ -48,7 +48,10 @@ from guake.globals import NAME, VERSION, LOCALE_DIR, KEY, \
 from guake.conf import GConfHandler, GConfKeyHandler
 from guake.terminal import TerminalBox
 
-Notify.init('Guake!')
+popup_works = True
+if not Notify.init('Guake!') or Notify.get_server_info() == None :
+    popup_works = False
+    print "WARNING: could not use popup notification"
 
 # Loading translation
 bindtextdomain(NAME, LOCALE_DIR)
@@ -224,8 +227,15 @@ class Guake(SimpleGtkApp):
                 _('A problem happened when binding <b>%s</b> key.\n'
                   'Please use Guake Preferences dialog to choose another '
                   'key (The trayicon was enabled)') % label, filename)
-            notification.show()
             self.client.set_bool(KEY('/general/use_trayicon'), True)
+            if popup_works :
+                notification.show()
+            else :
+                print _('A problem happened when binding <b>%s</b> key.\n'
+                  'Please use Guake Preferences dialog to choose another '
+                  'key (The trayicon was enabled)') % label
+
+
         elif self.client.get_bool(KEY('/general/use_popup')):
             # Pop-up that shows that guake is working properly (if not
             # unset in the preferences windows)
@@ -233,7 +243,12 @@ class Guake(SimpleGtkApp):
                 _('Guake!'),
                 _('Guake is now running,\n'
                   'press <b>%s</b> to use it.') % label, filename)
-            notification.show()
+            if popup_works :
+                notification.show()
+            else :
+                print _('Guake is now running,\n'
+                  'press <b>%s</b> to use it.') % label
+
 
     @property
     def current_tab(self):
